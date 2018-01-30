@@ -73,5 +73,11 @@ function Component (options) {
 }
 
 function render (component) {
-  component.vnode = html.update(component.vnode, component.view(component, html))
+  var newVnode = html.update(component.vnode, component.view(component, html))
+  component.vnode.data = newVnode.data
+  component.vnode.elm = newVnode.elm
+  component.vnode.children = newVnode.children
+  component.vnode.key = newVnode.key
+  component.vnode.text = newVnode.text
+  component.vnode.sel = newVnode.sel
 }
