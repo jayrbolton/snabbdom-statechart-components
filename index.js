@@ -1,3 +1,4 @@
+var mitt = require('mitt')
 var harel = require('harel')
 var html = require('snabby/create')([
   require('snabbdom/modules/eventlisteners').default,
@@ -12,11 +13,15 @@ module.exports = Component
 
 var id = 0
 function Component (options) {
+  var emitter = mitt()
   var component = {
     id: id++,
     handlers: {},
     tracing: options.trace,
     view: options.view,
+    emitter: emitter,
+    on: emitter.on.bind(emitter),
+    off: emitter.off.bind(emitter),
     emit: function (name, data) {
       if (this.tracing) {
         console.log('EVENT', name)
@@ -35,6 +40,7 @@ function Component (options) {
         console.log('    store: ', newStore)
       }
       render(this)
+      this.emitter.emit(name)
     }
   }
 
