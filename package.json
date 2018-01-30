@@ -1,6 +1,6 @@
 {
   "name": "snabbdom-statechart-components",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Fractal UI components using snabbdom, Harel statecharts, and event emitters",
   "main": "index.js",
   "directories": {
