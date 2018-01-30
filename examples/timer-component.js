@@ -1,5 +1,3 @@
-var h = require('snabbdom/h').default
-
 module.exports = function (duration) {
   return {
     trace: true,
@@ -45,46 +43,29 @@ module.exports = function (duration) {
         duration: duration
       }
     },
-    view: function (timer) {
+    view: function (timer, html) {
       // If running, then stop; if not running, then start
-      var toggleRunning = {'true': 'STOP', 'false': 'START'}
-      return h('div', [
-        h('button.toggle', {
-          props: {
-            disabled: timer.states.finished
-          },
-          on: {
-            click: function () {
-              timer.emit(toggleRunning[Boolean(timer.states.running)])
-            }
-          }
-        }, timer.states.running ? 'Pause' : 'Start'),
-        h('button.reset', {
-          props: {
-            disabled: timer.states.reset
-          },
-          on: {
-            click: function () {
-              timer.emit('RESTART')
-            }
-          }
-        }, 'Reset'),
-        h('input', {
-          props: {
-            placeholder: 'Duration in ms',
-            value: timer.store.duration,
-            disabled: !timer.states.reset
-          },
-          on: {
-            input: function (ev) {
-              var val = ev.currentTarget.value
-              timer.emit('SET_DUR', val)
-            }
-          }
-        }),
-        h('p', ['Currently ', JSON.stringify(timer.states)]),
-        h('p', ['time elapsed: ', timer.store.ms, ' / ', timer.store.duration])
-      ])
+      function toggleRunning () {
+        timer.emit(timer.states.running ? 'STOP' : 'START')
+      }
+      console.log(timer.states.finished)
+      return html`
+        <div>
+          <button class='toggle' @on:click=${toggleRunning} @props=${{disabled: timer.states.finished}}>
+            ${timer.states.running ? 'Pause' : 'Start'}
+          </button>
+          <button class='reset' @on:click=${() => timer.emit('RESTART')} @props=${{disabled: timer.states.reset}}>
+            Reset
+          </button>
+          <input 
+            @props:placeholder='Duration in ms'
+            @props:value=${timer.store.duration}
+            @props:disabled=${!timer.states.reset}
+            @on:input=${ev => timer.emit('SET_DUR', ev.currentTarget.value)} />
+          <p> Currently ${JSON.stringify(timer.states)} </p>
+          <p> Time elapsed: ${timer.store.ms} / ${timer.store.duration} </p>
+        </div>
+      `
     }
   }
 }

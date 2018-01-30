@@ -1,4 +1,3 @@
-var h = require('snabbdom/h').default
 var component = require('..')
 var Timer = require('./timer-component')
 
@@ -44,40 +43,27 @@ module.exports = function (timerDurations) {
         return list.store
       }
     },
-    view: function (list) {
-      return h('div', [
-        h('p', [list.store.timerArr.length, ' timers']),
-        h('p', ['Total duration: ', list.store.totalDuration]),
-        h('button', {
-          on: {
-            click: function () {
-              list.emit('ADD', 1000)
-            }
-          }
-        }, 'Add timer'),
-        h('button', {
-          on: {
-            click: function () {
-              list.emit('RESET_ALL')
-            }
-          }
-        }, 'Reset all'),
-        h('div', 
-          list.store.timerArr.map(function (timer, idx) {
-            return h('div', {key: timer.id}, [
-              'Timer ',
-              idx,
-              h('br'),
-              h('button', {
-                on: {
-                  click: function () { list.emit('REM', timer.id) }
-                }
-              }, 'Remove this timer'),
-              timer.vnode
-            ])
-          })
-        )
-      ])
+    view: function (list, html) {
+      var timers = list.store.timerArr.map(function (timer, idx) {
+        return html`
+          <div @key=${timer.id}>
+            Timer ${idx}
+            <br>
+            <button @on:click=${() => list.emit('REM', timer.id)}> Remove this timer </button>
+            ${timer.vnode}
+          </div>
+        `
+      })
+      console.log('timers', timers)
+      return html`
+        <div>
+          <p> ${list.store.timerArr.length} timers </p>
+          <p> Total duration: ${list.store.totalDuration} </p>
+          <button @on:click=${() => list.emit('ADD', 1000)}> Add timer </button>
+          <button @on:click=${() => list.emit('RESET_ALL')}> Reset all </button>
+          <div>${timers}</div>
+        </div>
+      `
     }
   }
 }

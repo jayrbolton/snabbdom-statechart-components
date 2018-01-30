@@ -1,6 +1,5 @@
 var harel = require('harel')
-var snabbdom = require('snabbdom')
-var patch = snabbdom.init([
+var html = require('snabby/create')([
   require('snabbdom/modules/eventlisteners').default,
   require('snabbdom/modules/props').default,
   require('snabbdom/modules/class').default,
@@ -17,7 +16,7 @@ function Component (options) {
     id: id++,
     handlers: {},
     tracing: options.trace,
-    view: options.view || function() { return '' },
+    view: options.view,
     emit: function (name, data) {
       if (this.tracing) {
         console.log('EVENT', name)
@@ -42,7 +41,7 @@ function Component (options) {
   var chart = harel.create({
     states: options.states,
     events: options.events || {},
-    where: options.nested || {},
+    where: options.nestedCharts || {},
     initial: options.initialStates || {}
   })
   component.chart = chart
@@ -59,15 +58,14 @@ function Component (options) {
     component.handlers[eventName] = options.actions[eventName]
   }
 
-  component.vnode = options.view(component)
+  component.vnode = options.view(component, html)
   if (options.container) {
-    component.vnode = patch(options.container, component.vnode)
+    component.vnode = html.update(options.container, component.vnode)
   }
 
   return component
 }
 
 function render (component) {
-  var result = component.view(component)
-  component.vnode = patch(component.vnode, component.view(component))
+  component.vnode = html.update(component.vnode, component.view(component, html))
 }
