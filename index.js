@@ -1,11 +1,12 @@
 var mitt = require('mitt')
 var harel = require('harel')
-var html = require('snabby/create')([
-  require('snabbdom/modules/eventlisteners').default,
+var snabbdom = require('snabbdom')
+var patch = snabbdom.init([
   require('snabbdom/modules/props').default,
-  require('snabbdom/modules/class').default,
-  require('snabbdom/modules/dataset').default,
   require('snabbdom/modules/style').default,
+  require('snabbdom/modules/class').default,
+  require('snabbdom/modules/eventlisteners').default,
+  require('snabbdom/modules/dataset').default,
   require('snabbdom/modules/attributes').default
 ])
 
@@ -64,16 +65,16 @@ function Component (options) {
     component.handlers[eventName] = options.actions[eventName]
   }
 
-  component.vnode = options.view(component, html)
+  component.vnode = options.view(component)
   if (options.container) {
-    component.vnode = html.update(options.container, component.vnode)
+    component.vnode = patch(options.container, component.vnode)
   }
 
   return component
 }
 
 function render (component) {
-  var newVnode = html.update(component.vnode, component.view(component, html))
+  var newVnode = patch(component.vnode, component.view(component))
   component.vnode.data = newVnode.data
   component.vnode.elm = newVnode.elm
   component.vnode.children = newVnode.children

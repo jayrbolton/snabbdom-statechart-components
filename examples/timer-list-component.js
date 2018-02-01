@@ -1,3 +1,4 @@
+var h = require('../h')
 var component = require('..')
 var Timer = require('./timer-component')
 
@@ -20,7 +21,10 @@ module.exports = function (timerDurations) {
       return store
     },
     actions: {
-      ADD: function (list, duration) {
+      ADD: function (list, submitEvent) {
+        submitEvent.preventDefault()
+        var duration = Number(submitEvent.currentTarget.querySelector('input').value)
+        if (!duration) return list.store
         push(list.store, duration)
         list.store.totalDuration += duration
         return list.store
@@ -43,27 +47,28 @@ module.exports = function (timerDurations) {
         return list.store
       }
     },
-    view: function (list, html) {
+    view: function (list) {
       var timers = list.store.timerArr.map(function (timer, idx) {
-        return html`
-          <div @key=${timer.id}>
-            Timer ${idx}
-            <br>
-            <button @on:click=${() => list.emit('REM', timer.id)}> Remove this timer </button>
-            ${timer.vnode}
-          </div>
-        `
+        return h('div', {key: timer.id}, [
+          'Timer ', idx,
+          h('br'),
+          h('button', { on: {click: () => list.emit('REM', timer.id)} }, 'Remove this timer'),
+          timer.vnode
+        ])
       })
-      console.log('timers', timers)
-      return html`
-        <div>
-          <p> ${list.store.timerArr.length} timers </p>
-          <p> Total duration: ${list.store.totalDuration} </p>
-          <button @on:click=${() => list.emit('ADD', 1000)}> Add timer </button>
-          <button @on:click=${() => list.emit('RESET_ALL')}> Reset all </button>
-          <div>${timers}</div>
-        </div>
-      `
+      return h('div', [
+        h('p', [list.store.timerArr.length, ' timers']),
+        h('p', 'Total duration: ', list.store.totalDuration),
+        h('form', {
+          on: {submit: (ev) => list.emit('ADD', ev)}
+        }, [
+          h('input', {props: {type: 'number', placeholder: 'New timer duration'}}),
+          h('button', 'Add timer')
+        ]),
+        h('button', {on: {click: () => list.emit('RESET_ALL')}}, 'Reset all'),
+        h('hr'),
+        h('div', timers)
+      ])
     }
   }
 }

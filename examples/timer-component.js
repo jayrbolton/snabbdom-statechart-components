@@ -1,3 +1,5 @@
+var h = require('../h')
+
 module.exports = function (duration) {
   return {
     trace: true,
@@ -43,29 +45,28 @@ module.exports = function (duration) {
         duration: duration
       }
     },
-    view: function (timer, html) {
+    view: function (timer) {
       // If running, then stop; if not running, then start
       function toggleRunning () {
         timer.emit(timer.states.running ? 'STOP' : 'START')
       }
       console.log(timer.states.finished)
-      return html`
-        <div>
-          <button class='toggle' @on:click=${toggleRunning} @props=${{disabled: timer.states.finished}}>
-            ${timer.states.running ? 'Pause' : 'Start'}
-          </button>
-          <button class='reset' @on:click=${() => timer.emit('RESTART')} @props=${{disabled: timer.states.reset}}>
-            Reset
-          </button>
-          <input 
-            @props:placeholder='Duration in ms'
-            @props:value=${timer.store.duration}
-            @props:disabled=${!timer.states.reset}
-            @on:input=${ev => timer.emit('SET_DUR', ev.currentTarget.value)} />
-          <p> Currently ${JSON.stringify(timer.states)} </p>
-          <p> Time elapsed: ${timer.store.ms} / ${timer.store.duration} </p>
-        </div>
-      `
+      return h('div', [
+        h('button.toggle', {
+          props: {disabled: timer.states.finished},
+          on: {click: toggleRunning}
+        }, timer.states.running ? 'Pause' : 'Start'),
+        h('button.reset', {
+          on: {click: () => timer.emit('RESTART')},
+          props: {disabled: timer.states.reset}
+        }, 'Reset'),
+        h('input', {
+          props: {placeholder: 'Duration in ms', value: timer.store.duration, disabled: !timer.states.reset},
+          on: {input: ev => timer.emit('SET_DUR', ev.currentTarget.value)}
+        }),
+        h('p', ['Currently ', JSON.stringify(timer.states)]),
+        h('p', ['Time elapsed ', timer.store.ms, ' / ', timer.store.duration])
+      ])
     }
   }
 }
