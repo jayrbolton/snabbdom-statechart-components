@@ -37,6 +37,10 @@ module.exports = function (duration) {
       TICK: function (timer) {
         timer.store.ms = timer.store.ms - 10
         return timer.store
+      },
+      DONE: function (timer) {
+        timer.store.ms = 0
+        return timer.store
       }
     },
     initialStore: function () {
@@ -50,7 +54,6 @@ module.exports = function (duration) {
       function toggleRunning () {
         timer.emit(timer.states.running ? 'STOP' : 'START')
       }
-      console.log(timer.states.finished)
       return h('div', [
         h('button.toggle', {
           props: {disabled: timer.states.finished},
