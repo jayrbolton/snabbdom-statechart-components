@@ -4,8 +4,7 @@ var testComponent = require('../test-util')
 var Timer = require('../examples/timer-component')
 
 test('timer component', function (t) {
-  var div = document.createElement('div')
-  var timer = Component(Object.assign(Timer(1000), {container: div, trace: false}))
+  var timer = Component(Object.assign(Timer(1000), {trace: false}))
   testComponent(timer, [
     {
       event: 'SET_DUR',

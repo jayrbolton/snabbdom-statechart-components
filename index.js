@@ -65,10 +65,8 @@ function Component (options) {
     component.handlers[eventName] = options.actions[eventName]
   }
 
-  component.vnode = options.view(component)
-  if (options.container) {
-    component.vnode = patch(options.container, component.vnode)
-  }
+  var container = document.createElement('div')
+  component.vnode = patch(container, options.view(component))
 
   return component
 }
