@@ -28,13 +28,12 @@ var Component = require('snabbdom-statechart-components')
 // Define a component, which is just an object with certain keys
 // Here we can configure our component with a custom duration
 
-const Timer = function (duration) {
+function Timer (duration) {
   return {
-    trace: true, // Print some debug messages
+    trace: true,
     states: ['running', 'paused', 'reset', 'finished'],
     events: {
       START: [
-        // [fromState, toState]
         ['paused', 'running'],
         ['reset', 'running']
       ],
@@ -49,12 +48,6 @@ const Timer = function (duration) {
       TICK: ['running', 'running']
     },
     initialStates: {reset: true},
-    initialStore: function () {
-      return {
-        ms: duration,
-        duration: duration
-      }
-    },
     actions: {
       SET_DUR: function (timer, val) {
         timer.store.ms = val
@@ -72,34 +65,42 @@ const Timer = function (duration) {
       TICK: function (timer) {
         timer.store.ms = timer.store.ms - 10
         return timer.store
+      },
+      DONE: function (timer) {
+        timer.store.ms = 0
+        return timer.store
       }
     },
-    view: function (timer, html) {
+    initialStore: function () {
+      return {
+        ms: duration,
+        duration: duration
+      }
+    },
+    view: function (timer) {
       // If running, then stop; if not running, then start
       function toggleRunning () {
         timer.emit(timer.states.running ? 'STOP' : 'START')
       }
-      return html`
-        <div>
-          <button class='toggle' @on:click=${toggleRunning} @props=${{disabled: timer.states.finished}}>
-            ${timer.states.running ? 'Pause' : 'Start'}
-          </button>
-          <button class='reset' @on:click=${() => timer.emit('RESTART')} @props=${{disabled: timer.states.reset}}>
-            Reset
-          </button>
-          <input 
-            @props:placeholder='Duration in ms'
-            @props:value=${timer.store.duration}
-            @props:disabled=${!timer.states.reset}
-            @on:input=${ev => timer.emit('SET_DUR', ev.currentTarget.value)} />
-          <p> Currently ${JSON.stringify(timer.states)} </p>
-          <p> Time elapsed: ${timer.store.ms} / ${timer.store.duration} </p>
-        </div>
-      `
+      return h('div', [
+        h('button.toggle', {
+          props: {disabled: timer.states.finished},
+          on: {click: toggleRunning}
+        }, timer.states.running ? 'Pause' : 'Start'),
+        h('button.reset', {
+          on: {click: () => timer.emit('RESTART')},
+          props: {disabled: timer.states.reset}
+        }, 'Reset'),
+        h('input', {
+          props: {placeholder: 'Duration in ms', value: timer.store.duration, disabled: !timer.states.reset},
+          on: {input: ev => timer.emit('SET_DUR', ev.currentTarget.value)}
+        }),
+        h('p', ['Currently ', JSON.stringify(timer.states)]),
+        h('p', ['Time elapsed ', timer.store.ms, ' / ', timer.store.duration])
+      ])
     }
   }
 }
-
 
 // We can render the component to the page by setting the .container property in the component
 
@@ -145,11 +146,11 @@ The second argument to an action function is any arbitrary data that was emitted
 
 #### View function
 
-The view function takes two arguments: the component instance and an `html` function.
+The view function takes an argument for the component instance.
 
 You can read and print data out of the component by accessing `component.store`, and you can fire events from the dom with `component.emit`.
 
-The `html` function generates virtual HTML markup with snabbdom that can be used to render to the page. It uses template literals with [snabby](https://github.com/jamen/snabby). Visit the Snabby documentation to learn more about its syntax.
+Import the `h()` function to generate html with `require('snabbdom-statechart-componets/h')`. Visit the snabbdom documentation for the details of its API. The snabbdom plugins `eventlisteners`, `class`, `props`, `attributes`, `dataset` and `style` are all enabled by this library.
 
 #### Nested charts
 
