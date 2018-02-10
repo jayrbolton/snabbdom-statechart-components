@@ -55,7 +55,7 @@ function Component (options) {
   component.states = chart.states
 
   if (options.initialStore) {
-    component.store = options.initialStore()
+    component.store = options.initialStore(component)
   }
 
   for (var eventName in options.actions) {
