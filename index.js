@@ -14,15 +14,20 @@ module.exports = Component
 
 var id = 0
 function Component (options) {
-  var emitter = mitt()
   var component = {
     id: id++,
     handlers: {},
     tracing: options.trace,
     view: options.view,
-    emitter: emitter,
-    on: emitter.on.bind(emitter),
-    off: emitter.off.bind(emitter),
+    emitter: mitt(),
+    on: function () {
+      this.emitter.on.apply(this.emitter, arguments)
+      return this
+    },
+    off: function () {
+      this.emitter.off.apply(this.emitter, arguments)
+      return this
+    },
     emit: function (name, data) {
       if (this.tracing) {
         console.log('EVENT', name)
@@ -42,6 +47,7 @@ function Component (options) {
       }
       render(this)
       this.emitter.emit(name)
+      return this
     }
   }
 
