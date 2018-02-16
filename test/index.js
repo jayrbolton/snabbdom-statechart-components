@@ -56,26 +56,26 @@ test('timer component', function (t) {
 })
 
 test('nested charts', function (t) {
-  function component () {
+  function example () {
     return {
       states: ['parent1', 'childChart'],
       initialStates: {parent1: true},
+      transitions: {
+        PUSH: ['parent1', 'childChart.s1'],
+        POP: ['childChart.s2', 'parent1']
+      },
       nestedCharts: {
         childChart: {
           states: ['s1', 's2'],
-          events: {JUMP: ['s1', 's2']}
+          transitions: {JUMP: ['s1', 's2']}
         }
-      },
-      events: {
-        PUSH: ['parent1', 'childChart.s1'],
-        POP: ['childChart.s2', 'parent1']
       },
       view: function () {
         return h('div', 'hi')
       }
     }
   }
-  const comp = Component(component())
+  const comp = Component(example())
   t.deepEqual(comp.states, {parent1: true})
   comp.emit('PUSH')
   t.deepEqual(comp.states, {childChart: {s1: true}})
@@ -83,5 +83,17 @@ test('nested charts', function (t) {
   t.deepEqual(comp.states, {childChart: {s2: true}})
   comp.emit('POP')
   t.deepEqual(comp.states, {parent1: true})
+  t.end()
+})
+
+test('throws an error on an invalid event', function (t) {
+  var comp = Component({
+    states: ['s1'],
+    initialStates: {s1: true},
+    view: function () {
+      return h('div', 'hi')
+    }
+  })
+  t.throws(() => comp.emit('INVALID'))
   t.end()
 })

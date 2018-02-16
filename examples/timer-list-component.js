@@ -5,13 +5,6 @@ var Timer = require('./timer-component')
 module.exports = function (timerDurations) {
   return {
     trace: true,
-    states: ['listing'],
-    events: {
-      ADD: ['listing', 'listing'],
-      REM: ['listing', 'listing'],
-      RESET_ALL: ['listing', 'listing']
-    },
-    initialStates: {listing: true},
     initialStore: function () {
       var store = {timerArr: [], timerObj: {}}
       timerDurations.forEach(function (dur) {

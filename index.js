@@ -32,8 +32,19 @@ function Component (options) {
       if (this.tracing) {
         console.log('EVENT', name)
       }
-      this.chart = this.chart.event(name)
-      this.states = this.chart.states
+      var newChart
+      try {
+        newChart = this.chart.event(name)
+      } catch (e) {
+        newChart = false
+      }
+      if (newChart) {
+        this.chart = newChart
+        this.states = newChart.states
+      }
+      if (!newChart && !(name in this.handlers)) {
+        throw new Error('Invalid event: ' + name)
+      }
       var action = this.handlers[name]
       if (action) {
         var newStore = action(this, data)
@@ -51,30 +62,38 @@ function Component (options) {
     }
   }
 
-  var chart = harel.create({
-    states: options.states,
-    events: options.events || {},
-    where: options.nestedCharts || {},
-    initial: options.initialStates || {}
-  })
+  var chart = harel.create(convertKeys(options))
   component.chart = chart
   component.states = chart.states
 
-  if (options.initialStore) {
-    component.store = options.initialStore(component)
+  for (var eventName in options.actions) {
+    component.handlers[eventName] = options.actions[eventName]
   }
 
-  for (var eventName in options.actions) {
-    if (!(eventName in options.events)) {
-      throw new Error('Invalid action on missing event: ' + eventName)
-    }
-    component.handlers[eventName] = options.actions[eventName]
+  if (options.initialStore) {
+    component.store = options.initialStore(component)
   }
 
   var container = document.createElement('div')
   component.vnode = patch(container, options.view(component))
 
   return component
+}
+
+// Convert keys in nested charts: transitions -> events
+function convertKeys (chart) {
+  var result = {
+    states: chart.states || [],
+    events: chart.transitions || {},
+    initial: chart.initialStates || {}
+  }
+  if (chart.nestedCharts) {
+    result.where = {}
+    for (var chartName in chart.nestedCharts) {
+      result.where[chartName] = convertKeys(chart.nestedCharts[chartName])
+    }
+  }
+  return result
 }
 
 function render (component) {

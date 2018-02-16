@@ -4,7 +4,7 @@ module.exports = function (duration) {
   return {
     trace: true,
     states: ['running', 'paused', 'reset', 'finished'],
-    events: {
+    transitions: {
       START: [
         ['paused', 'running'],
         ['reset', 'running']
